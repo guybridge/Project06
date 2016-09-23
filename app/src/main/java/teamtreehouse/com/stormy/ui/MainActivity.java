@@ -77,9 +77,12 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void getForecast(double latitude, double longitude) {
-        String apiKey = "ADD YOUR OWN API KEY"; // TODO: Replace this with your own API key from forecast.io
+        String apiKey = "b790a4b581ee6d93d0049964b590fe6e"; // TODO: Replace this with your own API key from forecast.io
         String forecastUrl = "https://api.forecast.io/forecast/" + apiKey +
                 "/" + latitude + "," + longitude;
+
+
+        Log.i(TAG, "Forecast URL is: " + forecastUrl);
 
         if (isNetworkAvailable()) {
             toggleRefresh();
