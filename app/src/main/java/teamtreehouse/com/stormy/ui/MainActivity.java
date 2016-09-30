@@ -1,5 +1,8 @@
 package teamtreehouse.com.stormy.ui;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -30,6 +33,7 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import teamtreehouse.com.stormy.R;
+import teamtreehouse.com.stormy.ui.fragments.HourlyForecastFragment;
 import teamtreehouse.com.stormy.weather.Current;
 import teamtreehouse.com.stormy.weather.Day;
 import teamtreehouse.com.stormy.weather.Forecast;
@@ -266,6 +270,29 @@ public class MainActivity extends ActionBarActivity {
         dialog.show(getFragmentManager(), "error_dialog");
     }
 
+    @OnClick (R.id.hourlyButton)
+    public void startHourlyActivity(View view)
+    {
+//        Intent intent = new Intent(this, HourlyForecastActivity.class);
+//        intent.putExtra(HOURLY_FORECAST, mForecast.getHourlyForecast());
+//        startActivity(intent);
+
+        // Add data to bundle
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(HOURLY_FORECAST, mForecast.getHourlyForecast());
+
+        // Setup fragment instance
+        Fragment hourlyFragment = new HourlyForecastFragment();
+        hourlyFragment.setArguments(bundle);
+
+        // Setup transition
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.container, hourlyFragment);
+        transaction.commit();
+
+    }
+
     @OnClick (R.id.dailyButton)
     public void startDailyActivity(View view) {
         Intent intent = new Intent(this, DailyForecastActivity.class);
@@ -273,12 +300,7 @@ public class MainActivity extends ActionBarActivity {
         startActivity(intent);
     }
 
-    @OnClick (R.id.hourlyButton)
-    public void startHourlyActivity(View view) {
-        Intent intent = new Intent(this, HourlyForecastActivity.class);
-        intent.putExtra(HOURLY_FORECAST, mForecast.getHourlyForecast());
-        startActivity(intent);
-    }
+
 }
 
 
