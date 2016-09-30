@@ -1,10 +1,15 @@
-package teamtreehouse.com.stormy.ui;
+package teamtreehouse.com.stormy.ui.fragments;
 
-import android.app.Activity;
+import android.annotation.SuppressLint;
+import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -16,26 +21,40 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import teamtreehouse.com.stormy.R;
 import teamtreehouse.com.stormy.adapters.DayAdapter;
+import teamtreehouse.com.stormy.ui.MainActivity;
 import teamtreehouse.com.stormy.weather.Day;
 
-public class DailyForecastActivity extends Activity {
-
+/**
+ * Created by guyb on 30/09/16.
+ */
+@SuppressLint("ValidFragment")
+public class DailyForecastFragment extends Fragment
+{
+    private final Context mContext;
     private Day[] mDays;
 
-    @InjectView(android.R.id.list) ListView mListView;
-    @InjectView(android.R.id.empty) TextView mEmptyTextView;
+    private ListView mListView;
+    private TextView mEmptyTextView;
 
+    @SuppressLint("ValidFragment")
+    public DailyForecastFragment(Context context, Day[] day)
+    {
+        mContext = context;
+        mDays = day;
+    }
+
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_daily_forecast);
-        ButterKnife.inject(this);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
 
-        Intent intent = getIntent();
-        Parcelable[] parcelables = intent.getParcelableArrayExtra(MainActivity.DAILY_FORECAST);
-        mDays = Arrays.copyOf(parcelables, parcelables.length, Day[].class);
+        View rootView = inflater.inflate(R.layout.fragment_daily_forecast, container, false);
 
-        DayAdapter adapter = new DayAdapter(this, mDays);
+
+        mListView = (ListView) rootView.findViewById(R.id.list);
+        mEmptyTextView = (TextView) rootView.findViewById(R.id.empty);
+
+        DayAdapter adapter = new DayAdapter(mContext, mDays);
         mListView.setAdapter(adapter);
         mListView.setEmptyView(mEmptyTextView);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -48,17 +67,12 @@ public class DailyForecastActivity extends Activity {
                         dayOfTheWeek,
                         highTemp,
                         conditions);
-                Toast.makeText(DailyForecastActivity.this, message, Toast.LENGTH_LONG).show();
+                Toast.makeText(mContext, message, Toast.LENGTH_LONG).show();
             }
         });
+
+        return rootView;
+
     }
+
 }
-
-
-
-
-
-
-
-
-

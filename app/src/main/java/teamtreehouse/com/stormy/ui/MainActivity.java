@@ -33,6 +33,7 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import teamtreehouse.com.stormy.R;
+import teamtreehouse.com.stormy.ui.fragments.DailyForecastFragment;
 import teamtreehouse.com.stormy.ui.fragments.HourlyForecastFragment;
 import teamtreehouse.com.stormy.weather.Current;
 import teamtreehouse.com.stormy.weather.Day;
@@ -273,31 +274,42 @@ public class MainActivity extends ActionBarActivity {
     @OnClick (R.id.hourlyButton)
     public void startHourlyActivity(View view)
     {
-//        Intent intent = new Intent(this, HourlyForecastActivity.class);
-//        intent.putExtra(HOURLY_FORECAST, mForecast.getHourlyForecast());
-//        startActivity(intent);
+        try
+        {
+            // Setup fragment instance
+            Fragment hourlyFragment = new HourlyForecastFragment(MainActivity.this, mForecast.getHourlyForecast());
 
-        // Add data to bundle
-        Bundle bundle = new Bundle();
-        bundle.putSerializable(HOURLY_FORECAST, mForecast.getHourlyForecast());
+            // Setup transition
+            FragmentManager fragmentManager = getFragmentManager();
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            transaction.replace(R.id.container, hourlyFragment);
+            transaction.commit();
+        }
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
 
-        // Setup fragment instance
-        Fragment hourlyFragment = new HourlyForecastFragment();
-        hourlyFragment.setArguments(bundle);
-
-        // Setup transition
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.replace(R.id.container, hourlyFragment);
-        transaction.commit();
 
     }
 
     @OnClick (R.id.dailyButton)
     public void startDailyActivity(View view) {
-        Intent intent = new Intent(this, DailyForecastActivity.class);
-        intent.putExtra(DAILY_FORECAST, mForecast.getDailyForecast());
-        startActivity(intent);
+
+        try
+        {
+            Fragment dailyFragment = new DailyForecastFragment(MainActivity.this, mForecast.getDailyForecast());
+            FragmentManager fragmentManager = getFragmentManager();
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            transaction.replace(R.id.container, dailyFragment);
+            transaction.commit();
+        }
+        catch(NullPointerException e)
+        {
+            e.printStackTrace();
+        }
+
+
     }
 
 
