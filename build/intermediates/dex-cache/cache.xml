@@ -1,12 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<items version="2" >
-
-    <item
-        jar="/home/guyb/git/Treehouse/Project06/app/build/intermediates/incremental-classes/debug/instant-run-bootstrap.jar"
-        jumboMode="true"
-        revision="24.0.2"
-        sha1="3057e4f8f5b894c152beccb25f674fe01ff09c27">
-        <dex dex="/home/guyb/git/Treehouse/Project06/app/build/intermediates/transforms/dex/debug/folders/1000/10/instant-run-bootstrap_aa8f7edfabed0f23b37ee58a124a4bf5f0450e8e/classes.dex" />
-    </item>
-
-</items>
+<items version="2" />
