@@ -1,5 +1,6 @@
 package teamtreehouse.com.stormy.ui.fragments;
 
+import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -32,6 +33,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import teamtreehouse.com.stormy.R;
 import teamtreehouse.com.stormy.ui.AlertDialogFragment;
+import teamtreehouse.com.stormy.utils.HttpUtils;
 import teamtreehouse.com.stormy.utils.JsonUtils;
 import teamtreehouse.com.stormy.utils.Network;
 import teamtreehouse.com.stormy.weather.Current;
@@ -42,6 +44,7 @@ import teamtreehouse.com.stormy.weather.Hour;
 /**
  * Created by guyb on 1/10/16.
  */
+@SuppressLint("ValidFragment")
 public class MainFragment extends Fragment
 {
 
@@ -61,6 +64,12 @@ public class MainFragment extends Fragment
     private ProgressBar mProgressBar;
     private Button mHourlyButton;
     private Button mDailyButton;
+
+    @SuppressLint("ValidFragment")
+    public MainFragment(Forecast forecast)
+    {
+        mForecast = forecast;
+    }
 
 
     @Nullable
@@ -82,13 +91,41 @@ public class MainFragment extends Fragment
 
         mProgressBar.setVisibility(View.INVISIBLE);
 
-        final double latitude = 37.8267;
-        final double longitude = -122.423;
-
         mRefreshImageView.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                getForecast(latitude, longitude);
+            public void onClick(View v)
+            {
+                getActivity().runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        toggleRefresh();
+                    }
+                });
+
+
+                HttpUtils httpUtils = new HttpUtils();
+                httpUtils.getForecast(new HttpUtils.Callback()
+                {
+
+                    @Override
+                    public void done(Forecast forecast)
+                    {
+
+                        mForecast = forecast;
+                        getActivity().runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                toggleRefresh();
+                                updateDisplay();
+                            }
+                        });
+
+                    }
+                });
             }
         });
 
@@ -111,87 +148,22 @@ public class MainFragment extends Fragment
         });
 
 
-        getForecast(latitude, longitude);
+        updateDisplay();
 
         Log.d(TAG, "Main UI code is running!");
 
         return rootView;
     }
 
-    private void getForecast(double latitude, double longitude)
+    private void toggleRefresh()
     {
-        String apiKey = "b790a4b581ee6d93d0049964b590fe6e";
-        String forecastUrl = "https://api.forecast.io/forecast/" + apiKey +
-                "/" + latitude + "," + longitude;
-
-        Log.i(TAG, "HttpUtils URL is: " + forecastUrl);
-
-        if (Network.isNetworkAvailable(getActivity())) {
-            toggleRefresh();
-
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                    .url(forecastUrl)
-                    .build();
-
-            Call call = client.newCall(request);
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(Request request, IOException e) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            toggleRefresh();
-                        }
-                    });
-                    alertUserAboutError();
-                }
-
-                @Override
-                public void onResponse(Response response) throws IOException {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            toggleRefresh();
-                        }
-                    });
-
-                    try {
-                        String jsonData = response.body().string();
-                        Log.v(TAG, jsonData);
-                        if (response.isSuccessful()) {
-                            mForecast = JsonUtils.parseForecastDetails(jsonData);
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    updateDisplay();
-                                }
-                            });
-                        } else {
-                            alertUserAboutError();
-                        }
-                    }
-                    catch (IOException e) {
-                        Log.e(TAG, "Exception caught: ", e);
-                    }
-                    catch (JSONException e) {
-                        Log.e(TAG, "Exception caught: ", e);
-                    }
-                }
-            });
-        }
-        else
+        if (mProgressBar.getVisibility() == View.INVISIBLE)
         {
-            Toast.makeText(getActivity(), getString(R.string.network_unavailable_message), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void toggleRefresh() {
-        if (mProgressBar.getVisibility() == View.INVISIBLE) {
             mProgressBar.setVisibility(View.VISIBLE);
             mRefreshImageView.setVisibility(View.INVISIBLE);
         }
-        else {
+        else
+        {
             mProgressBar.setVisibility(View.INVISIBLE);
             mRefreshImageView.setVisibility(View.VISIBLE);
         }
@@ -210,11 +182,6 @@ public class MainFragment extends Fragment
         mIconImageView.setImageDrawable(drawable);
     }
 
-    private void alertUserAboutError()
-    {
-        AlertDialogFragment dialog = new AlertDialogFragment();
-        dialog.show(getFragmentManager(), "error_dialog");
-    }
 
     public void startHourlyFragment()
     {
