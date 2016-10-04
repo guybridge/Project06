@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 
 import teamtreehouse.com.stormy.R;
 import teamtreehouse.com.stormy.adapters.HourAdapter;
+import teamtreehouse.com.stormy.utils.StormyConstants;
+import teamtreehouse.com.stormy.weather.Forecast;
 import teamtreehouse.com.stormy.weather.Hour;
 
 /**
@@ -22,16 +24,10 @@ import teamtreehouse.com.stormy.weather.Hour;
 public class HourlyForecastFragment extends Fragment
 {
     private Hour[] mHours;
-    private Context mContext;
+    private Forecast mForecast;
 
     RecyclerView mRecyclerView;
 
-    @SuppressLint("ValidFragment")
-    public HourlyForecastFragment(Context context, Hour[] hours)
-    {
-        mContext = context;
-        mHours = hours;
-    }
 
     @Nullable
     @Override
@@ -39,12 +35,16 @@ public class HourlyForecastFragment extends Fragment
     {
         View rootView = inflater.inflate(R.layout.fragment_hourly_forecast, container, false);
 
+        Bundle bundle = getArguments();
+        mForecast = (Forecast) bundle.getSerializable(StormyConstants.FORECAST_DATA);
+        mHours = mForecast.getHourlyForecast();
+
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.reyclerView);
 
         HourAdapter adapter = new HourAdapter(getActivity(), mHours);
         mRecyclerView.setAdapter(adapter);
 
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(mContext);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(layoutManager);
 
         mRecyclerView.setHasFixedSize(true);

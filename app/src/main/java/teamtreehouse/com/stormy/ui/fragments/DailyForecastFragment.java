@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +23,9 @@ import butterknife.InjectView;
 import teamtreehouse.com.stormy.R;
 import teamtreehouse.com.stormy.adapters.DayAdapter;
 import teamtreehouse.com.stormy.ui.MainActivity;
+import teamtreehouse.com.stormy.utils.StormyConstants;
 import teamtreehouse.com.stormy.weather.Day;
+import teamtreehouse.com.stormy.weather.Forecast;
 
 /**
  * Created by guyb on 30/09/16.
@@ -30,18 +33,14 @@ import teamtreehouse.com.stormy.weather.Day;
 @SuppressLint("ValidFragment")
 public class DailyForecastFragment extends Fragment
 {
-    private final Context mContext;
+
+    private static final String TAG = DailyForecastFragment.class.getSimpleName();
     private Day[] mDays;
+    private Forecast mForecast;
 
     private ListView mListView;
     private TextView mEmptyTextView;
 
-    @SuppressLint("ValidFragment")
-    public DailyForecastFragment(Context context, Day[] day)
-    {
-        mContext = context;
-        mDays = day;
-    }
 
     @Nullable
     @Override
@@ -50,11 +49,15 @@ public class DailyForecastFragment extends Fragment
 
         View rootView = inflater.inflate(R.layout.fragment_daily_forecast, container, false);
 
+        Bundle bundle = getArguments();
+        mForecast = (Forecast) bundle.getSerializable(StormyConstants.FORECAST_DATA);
+        mDays = mForecast.getDailyForecast();
+
 
         mListView = (ListView) rootView.findViewById(R.id.list);
         mEmptyTextView = (TextView) rootView.findViewById(R.id.empty);
 
-        DayAdapter adapter = new DayAdapter(mContext, mDays);
+        DayAdapter adapter = new DayAdapter(getActivity(), mDays);
         mListView.setAdapter(adapter);
         mListView.setEmptyView(mEmptyTextView);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -67,7 +70,7 @@ public class DailyForecastFragment extends Fragment
                         dayOfTheWeek,
                         highTemp,
                         conditions);
-                Toast.makeText(mContext, message, Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
             }
         });
 

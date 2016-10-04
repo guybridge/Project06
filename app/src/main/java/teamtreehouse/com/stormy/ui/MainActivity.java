@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.widget.Toast;
@@ -23,6 +24,8 @@ import teamtreehouse.com.stormy.ui.fragments.MainFragment;
 import teamtreehouse.com.stormy.utils.HttpUtils;
 import teamtreehouse.com.stormy.utils.JsonUtils;
 import teamtreehouse.com.stormy.utils.Network;
+import teamtreehouse.com.stormy.utils.StormyConstants;
+import teamtreehouse.com.stormy.weather.Day;
 import teamtreehouse.com.stormy.weather.Forecast;
 
 
@@ -34,16 +37,20 @@ public class MainActivity extends ActionBarActivity
     private final double latitude = -31.9505;
     private final double longitude = 115.8605;
 
-
-    @SuppressLint("MissingSuperCall")
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         getForecastData(latitude, longitude);
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState)
+    {
+        super.onSaveInstanceState(outState, outPersistentState);
     }
 
     public void setupUI()
@@ -72,8 +79,11 @@ public class MainActivity extends ActionBarActivity
 
     private void singlePaneForecast()
     {
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(StormyConstants.FORECAST_DATA, mForecast);
         // Setup to load into the single frame
-        MainFragment mainFragment = new MainFragment(mForecast);
+        MainFragment mainFragment = new MainFragment();
+        mainFragment.setArguments(bundle);
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(R.id.container, mainFragment);
@@ -83,18 +93,23 @@ public class MainActivity extends ActionBarActivity
 
     private void dualPaneForecast()
     {
-
         try
         {
+
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(StormyConstants.FORECAST_DATA, mForecast);
+
             // Setup to load into the single frame
-            MainFragment mainFragment = new MainFragment(mForecast);
+            MainFragment mainFragment = new MainFragment();
+            mainFragment.setArguments(bundle);
             FragmentManager fragmentManager = getFragmentManager();
             FragmentTransaction transaction = fragmentManager.beginTransaction();
             transaction.add(R.id.main_container, mainFragment);
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
             transaction.commit();
 
-            DailyForecastFragment dailyForecastFragment = new DailyForecastFragment(MainActivity.this, mForecast.getDailyForecast());
+            DailyForecastFragment dailyForecastFragment = new DailyForecastFragment();
+            dailyForecastFragment.setArguments(bundle);
             FragmentManager fragmentManager1 = getFragmentManager();
             FragmentTransaction transaction1 = fragmentManager1.beginTransaction();
             transaction1.add(R.id.container, dailyForecastFragment);
@@ -105,8 +120,6 @@ public class MainActivity extends ActionBarActivity
         {
             e.printStackTrace();
         }
-
-
 
     }
 

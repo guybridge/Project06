@@ -1,13 +1,11 @@
 package teamtreehouse.com.stormy.ui.fragments;
 
-import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.Context;
+
 import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -18,39 +16,27 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.squareup.okhttp.Call;
-import com.squareup.okhttp.Callback;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
+import java.nio.BufferUnderflowException;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import teamtreehouse.com.stormy.R;
-import teamtreehouse.com.stormy.ui.AlertDialogFragment;
+
 import teamtreehouse.com.stormy.utils.HttpUtils;
-import teamtreehouse.com.stormy.utils.JsonUtils;
-import teamtreehouse.com.stormy.utils.Network;
+
+import teamtreehouse.com.stormy.utils.StormyConstants;
 import teamtreehouse.com.stormy.weather.Current;
-import teamtreehouse.com.stormy.weather.Day;
+
 import teamtreehouse.com.stormy.weather.Forecast;
-import teamtreehouse.com.stormy.weather.Hour;
+
 
 /**
  * Created by guyb on 1/10/16.
  */
-@SuppressLint("ValidFragment")
+
 public class MainFragment extends Fragment
 {
 
     public static final String TAG = MainFragment.class.getSimpleName();
-    public static final String DAILY_FORECAST = "DAILY_FORECAST";
-    public static final String HOURLY_FORECAST = "HOURLY_FORECAST";
 
     private Forecast mForecast;
 
@@ -64,12 +50,6 @@ public class MainFragment extends Fragment
     private ProgressBar mProgressBar;
     private Button mHourlyButton;
     private Button mDailyButton;
-
-    @SuppressLint("ValidFragment")
-    public MainFragment(Forecast forecast)
-    {
-        mForecast = forecast;
-    }
 
 
     @Nullable
@@ -90,6 +70,9 @@ public class MainFragment extends Fragment
         mDailyButton = (Button) rootView.findViewById(R.id.dailyButton);
 
         mProgressBar.setVisibility(View.INVISIBLE);
+
+        Bundle bundle = getArguments();
+        mForecast = (Forecast) bundle.getSerializable(StormyConstants.FORECAST_DATA);
 
         mRefreshImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -147,8 +130,8 @@ public class MainFragment extends Fragment
             }
         });
 
-
         updateDisplay();
+
 
         Log.d(TAG, "Main UI code is running!");
 
@@ -187,8 +170,11 @@ public class MainFragment extends Fragment
     {
         try
         {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(StormyConstants.FORECAST_DATA, mForecast);
             // Setup fragment instance
-            Fragment hourlyFragment = new HourlyForecastFragment(getActivity(), mForecast.getHourlyForecast());
+            Fragment hourlyFragment = new HourlyForecastFragment();
+            hourlyFragment.setArguments(bundle);
 
             // Setup transition
             FragmentManager fragmentManager = getFragmentManager();
@@ -211,7 +197,10 @@ public class MainFragment extends Fragment
 
         try
         {
-            Fragment dailyFragment = new DailyForecastFragment(getActivity(), mForecast.getDailyForecast());
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(StormyConstants.FORECAST_DATA, mForecast);
+            Fragment dailyFragment = new DailyForecastFragment();
+            dailyFragment.setArguments(bundle);
             FragmentManager fragmentManager = getFragmentManager();
             FragmentTransaction transaction = fragmentManager.beginTransaction();
             transaction.add(R.id.container, dailyFragment);

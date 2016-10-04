@@ -1,11 +1,14 @@
 package teamtreehouse.com.stormy.weather;
 
+import java.io.Serializable;
+
 import teamtreehouse.com.stormy.R;
 
 /**
  * Created by benjakuben on 2/5/15.
  */
-public class Forecast {
+public class Forecast implements Serializable
+{
     private Current mCurrent;
     private Hour[] mHourlyForecast;
     private Day[] mDailyForecast;
