@@ -3,6 +3,8 @@ package teamtreehouse.com.stormy.ui;
 import android.annotation.SuppressLint;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.v7.app.ActionBarActivity;
@@ -17,16 +19,20 @@ import com.squareup.okhttp.Response;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 
 import teamtreehouse.com.stormy.R;
 import teamtreehouse.com.stormy.ui.fragments.DailyForecastFragment;
+import teamtreehouse.com.stormy.ui.fragments.HourlyForecastFragment;
 import teamtreehouse.com.stormy.ui.fragments.MainFragment;
+import teamtreehouse.com.stormy.utils.FragmentHelper;
 import teamtreehouse.com.stormy.utils.HttpUtils;
 import teamtreehouse.com.stormy.utils.JsonUtils;
 import teamtreehouse.com.stormy.utils.Network;
 import teamtreehouse.com.stormy.utils.StormyConstants;
 import teamtreehouse.com.stormy.weather.Day;
 import teamtreehouse.com.stormy.weather.Forecast;
+import teamtreehouse.com.stormy.weather.Hour;
 
 
 public class MainActivity extends ActionBarActivity
@@ -34,8 +40,7 @@ public class MainActivity extends ActionBarActivity
 
     public static final String TAG = MainActivity.class.getSimpleName();
     private Forecast mForecast;
-    private final double latitude = -31.9505;
-    private final double longitude = 115.8605;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -43,14 +48,8 @@ public class MainActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getForecastData(latitude, longitude);
+        getForecast();
 
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState)
-    {
-        super.onSaveInstanceState(outState, outPersistentState);
     }
 
     public void setupUI()
@@ -64,7 +63,19 @@ public class MainActivity extends ActionBarActivity
                 // When the large container exists then we are using the large layout
                 if(findViewById(R.id.largeLayout) != null)
                 {
-                    dualPaneForecast();
+                    currentForcast();
+
+                    // Check which detail to display
+                    FragmentHelper helper = new FragmentHelper(MainActivity.this);
+                    if(helper.getCurrentFragment().equals(StormyConstants.DAILY_FRAGMENT))
+                    {
+                        dailyForecast();
+                    }
+                    else
+                    {
+                        hourlyForecast();
+                    }
+
 
                 }
                 else
@@ -91,99 +102,70 @@ public class MainActivity extends ActionBarActivity
         transaction.commit();
     }
 
-    private void dualPaneForecast()
+    public void currentForcast()
     {
-        try
-        {
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(StormyConstants.FORECAST_DATA, mForecast);
 
-            Bundle bundle = new Bundle();
-            bundle.putSerializable(StormyConstants.FORECAST_DATA, mForecast);
+        // Setup to load into the single frame
+        MainFragment mainFragment = new MainFragment();
+        mainFragment.setArguments(bundle);
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.add(R.id.main_container, mainFragment);
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        transaction.commit();
+    }
 
-            // Setup to load into the single frame
-            MainFragment mainFragment = new MainFragment();
-            mainFragment.setArguments(bundle);
-            FragmentManager fragmentManager = getFragmentManager();
-            FragmentTransaction transaction = fragmentManager.beginTransaction();
-            transaction.add(R.id.main_container, mainFragment);
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-            transaction.commit();
+    public void dailyForecast()
+    {
+        // Set we are using hourly
+        FragmentHelper helper = new FragmentHelper(MainActivity.this);
+        helper.setCurrentFragment(StormyConstants.DAILY_FRAGMENT);
 
-            DailyForecastFragment dailyForecastFragment = new DailyForecastFragment();
-            dailyForecastFragment.setArguments(bundle);
-            FragmentManager fragmentManager1 = getFragmentManager();
-            FragmentTransaction transaction1 = fragmentManager1.beginTransaction();
-            transaction1.add(R.id.container, dailyForecastFragment);
-            transaction1.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-            transaction1.commit();
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(StormyConstants.FORECAST_DATA, mForecast);
 
+        DailyForecastFragment dailyForecastFragment = new DailyForecastFragment();
+        dailyForecastFragment.setArguments(bundle);
+        FragmentManager fragmentManager1 = getFragmentManager();
+        FragmentTransaction transaction1 = fragmentManager1.beginTransaction();
+        transaction1.add(R.id.container, dailyForecastFragment);
+        transaction1.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        transaction1.commit();
+    }
+
+    public void hourlyForecast()
+    {
+
+        // Set we are using hourly
+        FragmentHelper helper = new FragmentHelper(MainActivity.this);
+        helper.setCurrentFragment(StormyConstants.HOURLY_FRAGMENT);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(StormyConstants.FORECAST_DATA, mForecast);
+
+        HourlyForecastFragment hourlyForecastFragment = new HourlyForecastFragment();
+        hourlyForecastFragment.setArguments(bundle);
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.add(R.id.container, hourlyForecastFragment);
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        transaction.commit();
     }
 
 
-
-    private void getForecastData(double latitude, double longitude)
+    private void getForecast()
     {
-        String apiKey = "b790a4b581ee6d93d0049964b590fe6e";
-        String forecastUrl = "https://api.forecast.io/forecast/" + apiKey +
-                "/" + latitude + "," + longitude;
-
-        Log.i(TAG, "HttpUtils URL is: " + forecastUrl);
-
-        if (Network.isNetworkAvailable(MainActivity.this))
+        HttpUtils httpUtils = new HttpUtils();
+        httpUtils.getForecast(new HttpUtils.Callback()
         {
-
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                    .url(forecastUrl)
-                    .build();
-
-            Call call = client.newCall(request);
-            call.enqueue(new com.squareup.okhttp.Callback() {
-                @Override
-                public void onFailure(Request request, IOException e)
-                {
-                    alertUserAboutError();
-                }
-
-                @Override
-                public void onResponse(Response response) throws IOException
-                {
-                    try
-                    {
-                        String jsonData = response.body().string();
-                        Log.v(TAG, jsonData);
-                        if (response.isSuccessful())
-                        {
-                            mForecast = JsonUtils.parseForecastDetails(jsonData);
-                            setupUI();
-                        }
-                        else
-                        {
-                            alertUserAboutError();
-                        }
-                    }
-                    catch (IOException e) {
-                        Log.e(TAG, "Exception caught: ", e);
-                    }
-                    catch (JSONException e) {
-                        Log.e(TAG, "Exception caught: ", e);
-                    }
-                }
-            });
-        }
-        else
-        {
-            Toast.makeText(MainActivity.this, getString(R.string.network_unavailable_message), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void alertUserAboutError()
-    {
-        Toast.makeText(MainActivity.this, "Error loading data", Toast.LENGTH_LONG).show();
+            @Override
+            public void done(Forecast forecast)
+            {
+                mForecast = forecast;
+                setupUI();
+            }
+        });
     }
 
 

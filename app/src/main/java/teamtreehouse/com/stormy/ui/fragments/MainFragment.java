@@ -21,6 +21,7 @@ import java.nio.BufferUnderflowException;
 
 import teamtreehouse.com.stormy.R;
 
+import teamtreehouse.com.stormy.utils.FragmentHelper;
 import teamtreehouse.com.stormy.utils.HttpUtils;
 
 import teamtreehouse.com.stormy.utils.StormyConstants;
@@ -78,15 +79,8 @@ public class MainFragment extends Fragment
             @Override
             public void onClick(View v)
             {
-                getActivity().runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        toggleRefresh();
-                    }
-                });
 
+                toggleRefresh();
 
                 HttpUtils httpUtils = new HttpUtils();
                 httpUtils.getForecast(new HttpUtils.Callback()
@@ -97,15 +91,8 @@ public class MainFragment extends Fragment
                     {
 
                         mForecast = forecast;
-                        getActivity().runOnUiThread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                toggleRefresh();
-                                updateDisplay();
-                            }
-                        });
+                        toggleRefresh();
+                        updateDisplay();
 
                     }
                 });
@@ -140,29 +127,49 @@ public class MainFragment extends Fragment
 
     private void toggleRefresh()
     {
-        if (mProgressBar.getVisibility() == View.INVISIBLE)
+
+        getActivity().runOnUiThread(new Runnable()
         {
-            mProgressBar.setVisibility(View.VISIBLE);
-            mRefreshImageView.setVisibility(View.INVISIBLE);
-        }
-        else
-        {
-            mProgressBar.setVisibility(View.INVISIBLE);
-            mRefreshImageView.setVisibility(View.VISIBLE);
-        }
+            @Override
+            public void run()
+            {
+                if (mProgressBar.getVisibility() == View.INVISIBLE)
+                {
+                    mProgressBar.setVisibility(View.VISIBLE);
+                    mRefreshImageView.setVisibility(View.INVISIBLE);
+                }
+                else
+                {
+                    mProgressBar.setVisibility(View.INVISIBLE);
+                    mRefreshImageView.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
     }
 
-    private void updateDisplay() {
-        Current current = mForecast.getCurrent();
+    private void updateDisplay()
+    {
 
-        mTemperatureLabel.setText(current.getTemperature() + "");
-        mTimeLabel.setText("At " + current.getFormattedTime() + " it will be");
-        mHumidityValue.setText(current.getHumidity() + "");
-        mPrecipValue.setText(current.getPrecipChance() + "%");
-        mSummaryLabel.setText(current.getSummary());
+        getActivity().runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Current current = mForecast.getCurrent();
 
-        Drawable drawable = getResources().getDrawable(current.getIconId());
-        mIconImageView.setImageDrawable(drawable);
+                mTemperatureLabel.setText(current.getTemperature() + "");
+                mTimeLabel.setText("At " + current.getFormattedTime() + " it will be");
+                mHumidityValue.setText(current.getHumidity() + "");
+                mPrecipValue.setText(current.getPrecipChance() + "%");
+                mSummaryLabel.setText(current.getSummary());
+
+                Drawable drawable = getResources().getDrawable(current.getIconId());
+                mIconImageView.setImageDrawable(drawable);
+            }
+        });
+
+
     }
 
 
@@ -170,6 +177,10 @@ public class MainFragment extends Fragment
     {
         try
         {
+            // Set we are using hourly
+            FragmentHelper helper = new FragmentHelper(getActivity());
+            helper.setCurrentFragment(StormyConstants.HOURLY_FRAGMENT);
+
             Bundle bundle = new Bundle();
             bundle.putSerializable(StormyConstants.FORECAST_DATA, mForecast);
             // Setup fragment instance
@@ -197,6 +208,11 @@ public class MainFragment extends Fragment
 
         try
         {
+
+            // Set we are using hourly
+            FragmentHelper helper = new FragmentHelper(getActivity());
+            helper.setCurrentFragment(StormyConstants.DAILY_FRAGMENT);
+
             Bundle bundle = new Bundle();
             bundle.putSerializable(StormyConstants.FORECAST_DATA, mForecast);
             Fragment dailyFragment = new DailyForecastFragment();
