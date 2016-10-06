@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +26,7 @@ import teamtreehouse.com.stormy.adapters.DayAdapter;
 import teamtreehouse.com.stormy.ui.MainActivity;
 import teamtreehouse.com.stormy.utils.FragmentHelper;
 import teamtreehouse.com.stormy.utils.StormyConstants;
+import teamtreehouse.com.stormy.utils.Temperature;
 import teamtreehouse.com.stormy.weather.Day;
 import teamtreehouse.com.stormy.weather.Forecast;
 
@@ -41,6 +43,7 @@ public class DailyForecastFragment extends Fragment
 
     private ListView mListView;
     private TextView mEmptyTextView;
+    private RelativeLayout mLayout;
 
 
 
@@ -60,6 +63,9 @@ public class DailyForecastFragment extends Fragment
 
         mListView = (ListView) rootView.findViewById(R.id.list);
         mEmptyTextView = (TextView) rootView.findViewById(R.id.empty);
+        mLayout = (RelativeLayout) rootView.findViewById(R.id.dailyFragment);
+
+        Temperature.setBackground(getActivity(), mLayout, mForecast.getCurrent().getTemperature());
 
         DayAdapter adapter = new DayAdapter(getActivity(), mDays);
         mListView.setAdapter(adapter);
@@ -82,5 +88,6 @@ public class DailyForecastFragment extends Fragment
         return rootView;
 
     }
+
 
 }

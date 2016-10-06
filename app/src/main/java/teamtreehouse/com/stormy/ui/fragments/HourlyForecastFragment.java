@@ -10,25 +10,27 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import teamtreehouse.com.stormy.R;
 import teamtreehouse.com.stormy.adapters.HourAdapter;
 import teamtreehouse.com.stormy.utils.FragmentHelper;
 import teamtreehouse.com.stormy.utils.StormyConstants;
+import teamtreehouse.com.stormy.utils.Temperature;
 import teamtreehouse.com.stormy.weather.Forecast;
 import teamtreehouse.com.stormy.weather.Hour;
 
 /**
  * Created by guyb on 30/09/16.
  */
-@SuppressLint("ValidFragment")
 public class HourlyForecastFragment extends Fragment
 {
     private Hour[] mHours;
     private Forecast mForecast;
     private FragmentHelper fragmentHelper;
 
-    RecyclerView mRecyclerView;
+    private RecyclerView mRecyclerView;
+    private RelativeLayout mLayout;
 
 
     @Nullable
@@ -55,6 +57,10 @@ public class HourlyForecastFragment extends Fragment
 
         mRecyclerView.setVerticalScrollbarPosition(fragmentHelper.getScrollPosition());
 
+        mLayout = (RelativeLayout) rootView.findViewById(R.id.hourlyFragment);
+
+        Temperature.setBackground(getActivity(), mLayout, mForecast.getCurrent().getTemperature());
+
         return rootView;
     }
 
@@ -64,4 +70,7 @@ public class HourlyForecastFragment extends Fragment
         super.onSaveInstanceState(outState);
         fragmentHelper.setScrollPosition(mRecyclerView.getVerticalScrollbarPosition());
     }
+
+
+
 }

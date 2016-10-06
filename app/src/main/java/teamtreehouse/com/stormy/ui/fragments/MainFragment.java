@@ -26,6 +26,7 @@ import teamtreehouse.com.stormy.utils.FragmentHelper;
 import teamtreehouse.com.stormy.utils.HttpUtils;
 
 import teamtreehouse.com.stormy.utils.StormyConstants;
+import teamtreehouse.com.stormy.utils.Temperature;
 import teamtreehouse.com.stormy.weather.Current;
 
 import teamtreehouse.com.stormy.weather.Forecast;
@@ -144,7 +145,7 @@ public class MainFragment extends Fragment
             {
                 Current current = mForecast.getCurrent();
 
-                setBackground(current.getTemperature());
+                Temperature.setBackground(getActivity(), mLayout, current.getTemperature());
 
                 mTemperatureLabel.setText(current.getTemperature() + "");
                 mTimeLabel.setText("At " + current.getFormattedTime() + " it will be");
@@ -173,15 +174,6 @@ public class MainFragment extends Fragment
         }
 
     }
-
-    private void setBackground(int temperature)
-    {
-        if(temperature < 20)
-        {
-            mLayout.setBackground(getResources().getDrawable(R.drawable.bg_gradient_cold));
-        }
-    }
-
 
     public void startHourlyFragment()
     {
@@ -213,6 +205,7 @@ public class MainFragment extends Fragment
 
             Bundle bundle = new Bundle();
             bundle.putSerializable(StormyConstants.FORECAST_DATA, mForecast);
+
             Fragment dailyFragment = new DailyForecastFragment();
             dailyFragment.setArguments(bundle);
             FragmentManager fragmentManager = getFragmentManager();

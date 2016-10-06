@@ -12,4 +12,5 @@ public class StormyConstants
     public static final String PREFERENCES_FILE = "preferences_file";
     public static final String KEY_IS_TABLET = "is_tablet";
     public static final String KEY_SCROLL_POSITION = "scroll_position";
+    public static final String CURRENT_TEMPERATURE = "current_temperature";
 }

@@ -7,6 +7,7 @@
                 android:paddingRight="32dp"
                 android:paddingTop="4dp"
                 android:paddingBottom="4dp"
+                android:id="@+id/list_item_layout"
                 tools:background="#ffaa00">
 
     <ImageView
