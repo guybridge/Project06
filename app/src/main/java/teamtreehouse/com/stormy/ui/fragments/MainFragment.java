@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.nio.BufferUnderflowException;
@@ -41,16 +42,20 @@ public class MainFragment extends Fragment
 
     private Forecast mForecast;
 
+    private RelativeLayout mLayout;
     private TextView mTimeLabel;
     private TextView mTemperatureLabel;
     private TextView mHumidityValue;
     private TextView mPrecipValue;
     private TextView mSummaryLabel;
+    private TextView mLocationLabel;
     private ImageView mIconImageView;
     private ImageView mRefreshImageView;
     private ProgressBar mProgressBar;
     private Button mHourlyButton;
     private Button mDailyButton;
+
+    private FragmentHelper fragmentHelper;
 
 
     @Nullable
@@ -69,60 +74,41 @@ public class MainFragment extends Fragment
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.progressBar);
         mHourlyButton = (Button) rootView.findViewById(R.id.hourlyButton);
         mDailyButton = (Button) rootView.findViewById(R.id.dailyButton);
+        mLocationLabel = (TextView) rootView.findViewById(R.id.locationLabel);
+        mLayout = (RelativeLayout) rootView.findViewById(R.id.main_layout);
 
         mProgressBar.setVisibility(View.INVISIBLE);
 
-        Bundle bundle = getArguments();
-        mForecast = (Forecast) bundle.getSerializable(StormyConstants.FORECAST_DATA);
 
-        mRefreshImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v)
-            {
-
-                toggleRefresh();
-
-                HttpUtils httpUtils = new HttpUtils();
-                httpUtils.getForecast(new HttpUtils.Callback()
-                {
-
-                    @Override
-                    public void done(Forecast forecast)
-                    {
-
-                        mForecast = forecast;
-                        toggleRefresh();
-                        updateDisplay();
-
-                    }
-                });
-            }
-        });
-
-        mHourlyButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                startHourlyFragment();
-            }
-        });
-
-        mDailyButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                startDailyFragment();
-            }
-        });
-
-        updateDisplay();
+        // Setup the fragment history helper for tablets
+        fragmentHelper = new FragmentHelper(getActivity());
 
 
-        Log.d(TAG, "Main UI code is running!");
+        getForecast();
+
+        setupButtons();
 
         return rootView;
+    }
+
+
+    private void getForecast()
+    {
+
+        toggleRefresh();
+
+        HttpUtils forecast = new HttpUtils();
+        forecast.getForecast(new HttpUtils.Callback()
+        {
+            @Override
+            public void done(Forecast forecast)
+            {
+                toggleRefresh();
+                mForecast = forecast;
+
+                updateDisplay();
+            }
+        });
     }
 
     private void toggleRefresh()
@@ -158,28 +144,49 @@ public class MainFragment extends Fragment
             {
                 Current current = mForecast.getCurrent();
 
+                setBackground(current.getTemperature());
+
                 mTemperatureLabel.setText(current.getTemperature() + "");
                 mTimeLabel.setText("At " + current.getFormattedTime() + " it will be");
                 mHumidityValue.setText(current.getHumidity() + "");
                 mPrecipValue.setText(current.getPrecipChance() + "%");
                 mSummaryLabel.setText(current.getSummary());
+                mLocationLabel.setText(current.getTimeZone());
 
                 Drawable drawable = getResources().getDrawable(current.getIconId());
                 mIconImageView.setImageDrawable(drawable);
             }
         });
 
+        // Set the second fragment up if we are on a tab
+        if(fragmentHelper.getIsTablet())
+        {
+            if(fragmentHelper.getCurrentFragment().equals(StormyConstants.DAILY_FRAGMENT))
+            {
+                startDailyFragment();
+            }
+            else
+            {
+                startHourlyFragment();
+            }
 
+        }
+
+    }
+
+    private void setBackground(int temperature)
+    {
+        if(temperature < 20)
+        {
+            mLayout.setBackground(getResources().getDrawable(R.drawable.bg_gradient_cold));
+        }
     }
 
 
     public void startHourlyFragment()
     {
-        try
-        {
-            // Set we are using hourly
-            FragmentHelper helper = new FragmentHelper(getActivity());
-            helper.setCurrentFragment(StormyConstants.HOURLY_FRAGMENT);
+
+            fragmentHelper.setCurrentFragment(StormyConstants.HOURLY_FRAGMENT);
 
             Bundle bundle = new Bundle();
             bundle.putSerializable(StormyConstants.FORECAST_DATA, mForecast);
@@ -194,24 +201,15 @@ public class MainFragment extends Fragment
             transaction.addToBackStack("HourlyFragment");
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
             transaction.commit();
-        }
-        catch(NullPointerException e)
-        {
-            e.printStackTrace();
-        }
 
 
     }
 
     public void startDailyFragment()
     {
+            // Set we are using daily
 
-        try
-        {
-
-            // Set we are using hourly
-            FragmentHelper helper = new FragmentHelper(getActivity());
-            helper.setCurrentFragment(StormyConstants.DAILY_FRAGMENT);
+            fragmentHelper.setCurrentFragment(StormyConstants.DAILY_FRAGMENT);
 
             Bundle bundle = new Bundle();
             bundle.putSerializable(StormyConstants.FORECAST_DATA, mForecast);
@@ -223,13 +221,36 @@ public class MainFragment extends Fragment
             transaction.addToBackStack("DailyFragment");
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
             transaction.commit();
-        }
-        catch(NullPointerException e)
+    }
+
+    private void setupButtons()
+    {
+        mHourlyButton.setOnClickListener(new View.OnClickListener()
         {
-            e.printStackTrace();
-        }
+            @Override
+            public void onClick(View view)
+            {
+                startHourlyFragment();
+            }
+        });
 
+        mDailyButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                startDailyFragment();
+            }
+        });
 
+        mRefreshImageView.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                getForecast();
+            }
+        });
     }
 
 

@@ -23,6 +23,7 @@ import butterknife.InjectView;
 import teamtreehouse.com.stormy.R;
 import teamtreehouse.com.stormy.adapters.DayAdapter;
 import teamtreehouse.com.stormy.ui.MainActivity;
+import teamtreehouse.com.stormy.utils.FragmentHelper;
 import teamtreehouse.com.stormy.utils.StormyConstants;
 import teamtreehouse.com.stormy.weather.Day;
 import teamtreehouse.com.stormy.weather.Forecast;
@@ -42,12 +43,15 @@ public class DailyForecastFragment extends Fragment
     private TextView mEmptyTextView;
 
 
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
 
         View rootView = inflater.inflate(R.layout.fragment_daily_forecast, container, false);
+
+
 
         Bundle bundle = getArguments();
         mForecast = (Forecast) bundle.getSerializable(StormyConstants.FORECAST_DATA);
@@ -59,6 +63,7 @@ public class DailyForecastFragment extends Fragment
 
         DayAdapter adapter = new DayAdapter(getActivity(), mDays);
         mListView.setAdapter(adapter);
+
         mListView.setEmptyView(mEmptyTextView);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

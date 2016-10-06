@@ -3,13 +3,17 @@ package teamtreehouse.com.stormy.weather;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import teamtreehouse.com.stormy.utils.Temperature;
 
 /**
  * Created by benjakuben on 2/5/15.
  */
-public class Hour implements Parcelable {
+public class Hour implements Parcelable, Serializable
+{
     private long mTime;
     private String mSummary;
     private double mTemperature;
@@ -39,7 +43,7 @@ public class Hour implements Parcelable {
     }
 
     public void setTemperature(double temperature) {
-        mTemperature = temperature;
+        mTemperature = Temperature.convert(temperature);
     }
 
     public String getIcon() {

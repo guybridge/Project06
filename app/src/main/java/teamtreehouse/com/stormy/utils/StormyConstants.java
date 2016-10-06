@@ -10,4 +10,6 @@ public class StormyConstants
     public static final String DAILY_FRAGMENT = "DAILY_FRAGMENT";
     public static final String HOURLY_FRAGMENT = "HOURLY_FRAGMENT";
     public static final String PREFERENCES_FILE = "preferences_file";
+    public static final String KEY_IS_TABLET = "is_tablet";
+    public static final String KEY_SCROLL_POSITION = "scroll_position";
 }

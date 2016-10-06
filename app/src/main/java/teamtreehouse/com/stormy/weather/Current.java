@@ -1,13 +1,17 @@
 package teamtreehouse.com.stormy.weather;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import teamtreehouse.com.stormy.utils.Temperature;
+
 /**
  * Created by benjakuben on 12/8/14.
  */
-public class Current {
+public class Current implements Serializable
+{
     private String mIcon;
     private long mTime;
     private double mTemperature;
@@ -53,12 +57,14 @@ public class Current {
         mTime = time;
     }
 
-    public int getTemperature() {
+    public int getTemperature()
+    {
         return (int)Math.round(mTemperature);
     }
 
-    public void setTemperature(double temperature) {
-        mTemperature = temperature;
+    public void setTemperature(double temperature)
+    {
+        mTemperature = Temperature.convert(temperature);
     }
 
     public double getHumidity() {

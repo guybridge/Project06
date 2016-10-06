@@ -2,7 +2,19 @@
     android:id="@+id/container"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
+
+
+    <fragment
+        android:layout="@layout/fragment_main"
+        android:id="@+id/main_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:name="teamtreehouse.com.stormy.ui.fragments.MainFragment"
+        tools:layout="@layout/fragment_main">
+
+    </fragment>
 
 
 
